@@ -5,7 +5,7 @@ import { status, type BusCall, type WatchedLineConfig } from "../../src/domain/w
 import { runGolden } from "./harness";
 
 interface QuayInput {
-  stopPlace?: { id?: string | null } | null;
+  stopPlace?: { id?: string | null; parent?: { id?: string | null } | null } | null;
 }
 
 interface CallInput {
@@ -41,9 +41,11 @@ function toBusCall(call: CallInput): BusCall {
     expectedDep: call.expectedDepartureTime ?? null,
     realtime: call.realtime ?? false,
     cancelled: call.cancellation ?? false,
-    quayIds: (call.serviceJourney?.quays ?? [])
-      .map((q) => q.stopPlace?.id)
-      .filter((id): id is string => id !== null && id !== undefined),
+    // 与 src/jobs/bus.ts 的 toBusCall 逐行一致（[gate] P10 修正：带上父站 id）。
+    quays: (call.serviceJourney?.quays ?? [])
+      .map((q) => q.stopPlace)
+      .filter((sp): sp is { id: string; parent?: { id?: string | null } | null } => !!sp?.id)
+      .map((sp) => ({ id: sp.id, parentId: sp.parent?.id ?? null })),
   };
 }
 

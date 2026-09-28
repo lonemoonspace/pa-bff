@@ -247,12 +247,15 @@ v1 的公交卡片把线路与两端站写死在代码里；P9 起改为设置�
 - BFF：`train` 任务写 `not_configured`（configKey 为 null），不发请求；依赖 train 的通知按「输入无效」处理（第 6.2 节）
 
 **关注线路**：六个字段都非空才算已配置，否则 `bus` 来源为 `not_configured`、不发请求。configKey = `<lineId>|<stopAId>|<stopBId>`。已配置时：
-- 请求：一次 Entur 查询取 A、B 两个 stop place 的到站记录，`whiteListed: { lines: [lineId] }`，每个班次同时取 `serviceJourney.quays { stopPlace { id } }`（该班次按顺序经过的站）
+- 请求：一次 Entur 查询取 A、B 两个 stop place 的到站记录，`whiteListed: { lines: [lineId] }`，每个班次同时取 `serviceJourney.quays { stopPlace { id parent { id } } }`（该班次按顺序经过的站，连同父站）
+- **站的匹配（[gate] P10 修正）**：设置里的站 id 可能是车站的**父** stop place（多模式枢纽，例如火车站整体），而班次站序里给出的是**子** stop place（例如站前的公交站台）。站序中的一项「是 X」当且仅当它的 `stopPlace.id = X` **或** `stopPlace.parent.id = X`。P9 只比较 `id`，导致父站设置下所有班次都被排除（首页公交卡片空白：调度员对真实线路实测，某火车站前的公交站台在站序里是子 stop place，设置里存的是它的父站 id）
 - 方向判定：A 站的班次只有当 B 出现在该班次站序里、且位置在 A 之后，才算「A → B」；B 站同理。**不再**按终点站名匹配（线路可能有不到对端的区间车，例如只开到中途的短线班次必须被排除）
 - `BusStatus.boards` 固定两块：`[A → B, B → A]`，`boardStop` / `towardStop` 为设置里的站名；`lineCode` 为设置里的 `watchedLineCode`
 - 其余（每块取的条数、裁剪已开走的班次、倒计时文案、30 分钟过期标注）与 v1 的公交卡片相同
 
-**`GET /v1/lines`**：一次 Entur 查询取两个 stop place 的 `quays { lines { id publicCode name transportMode } }`，返回两边都出现的线路（按 id 去重），排序见 `LinesResponseSchema` 注释。任一 stop place 不存在 → 返回空列表。
+**App 端的选择器（[gate] P10）**：设置页的地址联想与关注线路选择器在直连与 BFF 两种模式下都**直接查 Entur**（公开接口、无需 Key，只是界面上的查找，不经服务器）：地址用 Entur 地理编码联想；线路先按线路号查 `lines(publicCodes)`，列出同号的所有线路（显示线路名与运营方以区分各地的同号线路），选定后默认 A / B 为该线**站数最多的走向**的首末站，用户可对调或在该走向的站里改选。
+
+**`GET /v1/lines`**（保留，供管理界面与其他客户端；App 自 P10 起不再调用）：一次 Entur 查询取两个 stop place 的 `quays { lines { id publicCode name transportMode } }`，返回两边都出现的线路（按 id 去重），排序见 `LinesResponseSchema` 注释。任一 stop place 不存在 → 返回空列表。
 
 **首次运行迁移（只在 App 本地）**：App 首次运行（新装或升级；PANext 用新包名 `com.panext.app`，在用户手机上是新装而不是覆盖升级）时，若本机设置的六个 `watchedLine*` 都为空且迁移标记未写过，填入 v1 那张写死卡片的线路与两端站，并写迁移标记（只迁移一次；用户之后清空也不会再填回）。App 不公开发布，这相当于只存在于 App 里的一个首装默认值。已接入 BFF 的 owner 设备经 `RemoteSettingsSync.save` 提交；viewer 不迁移（由 owner 决定）。**BFF 不做任何迁移，BFF 代码与测试里不出现这条线路与这两个站**。
 

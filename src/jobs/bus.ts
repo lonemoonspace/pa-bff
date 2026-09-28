@@ -22,9 +22,12 @@ function toBusCall(call: WatchedLineStopDeparture): watchedLine.BusCall {
     expectedDep: call.expectedDepartureTime,
     realtime: call.realtime,
     cancelled: call.cancellation,
-    quayIds: (call.serviceJourney?.quays ?? [])
-      .map((q) => q.stopPlace?.id)
-      .filter((id): id is string => id !== null && id !== undefined),
+    // [gate] P10 修正：parentId 一并带上，方向判定既比子站自身 id 也比它的父站 id
+    // （CONTRACT 第 9 节「站的匹配」）。
+    quays: (call.serviceJourney?.quays ?? [])
+      .map((q) => q.stopPlace)
+      .filter((sp): sp is { id: string; parent: { id: string | null } | null } => !!sp?.id)
+      .map((sp) => ({ id: sp.id, parentId: sp.parent?.id ?? null })),
   };
 }
 

@@ -39,12 +39,23 @@ export interface WatchedLineConfig {
 }
 
 /**
+ * 站序里的一站（[gate] P10 修正）：设置里的站可能是车站的**父** stop place（多模式枢纽），
+ * 而班次站序里给出的是**子** stop place（例如站台）；parentId 是该子站的父站 id（没有父站
+ * 时为 null/undefined）。CONTRACT 第 9 节「站的匹配」：一项「是 X」当且仅当 `id === X` 或
+ * `parentId === X`。
+ */
+export interface QuayRef {
+  id: string;
+  parentId?: string | null;
+}
+
+/**
  * 一条 Entur 到站记录里本策略关心的部分。任务处理器负责把网络 DTO
  * （src/sources/entur.ts 的 WatchedLineStopDeparture）映射成本类型，领域层因此不依赖
  * 任何网络类型。
  *
- * quayIds 是该班次按顺序经过的 stop place id（Entur
- * serviceJourney.quays[].stopPlace.id），方向判定只看它，不看 destName。
+ * quays 是该班次按顺序经过的站（Entur serviceJourney.quays[].stopPlace），方向判定只看它
+ * （见 passesThrough），不看 destName。
  */
 export interface BusCall {
   line?: string | null;
@@ -53,7 +64,7 @@ export interface BusCall {
   expectedDep?: string | null;
   realtime?: boolean;
   cancelled?: boolean;
-  quayIds?: string[];
+  quays?: QuayRef[];
 }
 
 function parseIso(value: string | null | undefined): Date | null {
@@ -94,13 +105,21 @@ function departureOf(call: BusCall): BusDeparture {
 }
 
 /**
+ * 站序里的一项是否「是」某个设置里的站 id（[gate] P10 修正，CONTRACT 第 9 节「站的匹配」）：
+ * 设置里存的可能是父站 id，而站序给出子站；`id === target` 或 `parentId === target` 都算。
+ */
+function quayMatches(quay: QuayRef, target: string): boolean {
+  return quay.id === target || quay.parentId === target;
+}
+
+/**
  * 方向判定（CONTRACT 第 9 节）：该班次的站序里，toId 是否出现、且位置在 fromId 之后。
  * 两者有一个不在站序里（含只开到中途、不经过对端站的区间车；或反向班次）都不算数。
  */
-export function passesThrough(quayIds: string[], fromId: string, toId: string): boolean {
+export function passesThrough(quays: QuayRef[], fromId: string, toId: string): boolean {
   if (!fromId || !toId) return false;
-  const fromIndex = quayIds.indexOf(fromId);
-  const toIndex = quayIds.indexOf(toId);
+  const fromIndex = quays.findIndex((q) => quayMatches(q, fromId));
+  const toIndex = quays.findIndex((q) => quayMatches(q, toId));
   return fromIndex >= 0 && toIndex >= 0 && toIndex > fromIndex;
 }
 
@@ -120,7 +139,7 @@ export function board(
   const timed: Array<{ departure: BusDeparture; dep: Date }> = [];
   for (const call of calls) {
     if ((call.line ?? "") !== lineCode) continue;
-    if (!passesThrough(call.quayIds ?? [], fromId, toId)) continue;
+    if (!passesThrough(call.quays ?? [], fromId, toId)) continue;
     const dep = parseIso(effectiveDep(call));
     if (!dep) continue;
     if (dep.getTime() < now.getTime()) continue;

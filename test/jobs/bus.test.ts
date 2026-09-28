@@ -63,16 +63,23 @@ function hm(iso_: string): string {
   return osloIsoOffset(new Date(iso_)).slice(11, 16);
 }
 
+interface QuayOpt {
+  id: string;
+  parentId?: string;
+}
+
 interface CallOpts {
   aimed: string;
   line?: string;
   quayIds?: string[];
+  quays?: QuayOpt[];
   realtime?: boolean;
   expected?: string | null;
   destName?: string;
 }
 
 function call(opts: CallOpts): unknown {
+  const quays: QuayOpt[] = opts.quays ?? (opts.quayIds ?? [STOP_A_ID, STOP_B_ID]).map((id) => ({ id }));
   return {
     realtime: opts.realtime ?? true,
     aimedDepartureTime: opts.aimed,
@@ -82,7 +89,9 @@ function call(opts: CallOpts): unknown {
     serviceJourney: {
       transportMode: "bus",
       journeyPattern: { line: { publicCode: opts.line ?? LINE_CODE } },
-      quays: (opts.quayIds ?? [STOP_A_ID, STOP_B_ID]).map((id) => ({ stopPlace: { id } })),
+      quays: quays.map((q) => ({
+        stopPlace: { id: q.id, parent: q.parentId ? { id: q.parentId } : null },
+      })),
     },
   };
 }
@@ -154,7 +163,7 @@ describe("busJob：请求构造", () => {
     expect(calls).toHaveLength(1);
     const { query, variables } = calls[0]!.body;
     expect(query).toContain("whiteListed: { lines: $lines }");
-    expect(query).toContain("quays { stopPlace { id } }");
+    expect(query).toContain("quays { stopPlace { id parent { id } } }");
     expect(variables.lines).toEqual([LINE_ID]);
     expect(variables.stop0).toBe(STOP_A_ID);
     expect(variables.stop1).toBe(STOP_B_ID);
@@ -208,6 +217,40 @@ describe("busJob：方向映射", () => {
     const boardB = status.boards.find((b) => b.boardStop === STOP_B_NAME)!;
     expect(boardB.towardStop).toBe(STOP_A_NAME);
     expect(boardB.departures.map((d) => hm(d.depTime))).toEqual([hm(iso(base, 29)), hm(iso(base, 89))]);
+  });
+
+  // [gate] P10 修正：线上现象复现——设置里存的是父站 id，Entur 站序给出带 parent 的子站，
+  // 修复前这里会因为只比子站 id 而永远匹配不上，两个方向都空（CONTRACT 第 9 节「站的匹配」）。
+  it("设置是父站、站序是带 parent 的子站 → 正常出班次", async () => {
+    const parentAId = "NSR:StopPlace:91001";
+    const parentBId = "NSR:StopPlace:91002";
+    await setWatchedLine({ watchedStopAId: parentAId, watchedStopBId: parentBId });
+    const base = new Date("2026-09-22T06:00:00.000Z");
+    mockFetch(
+      envelope(
+        [
+          call({
+            aimed: iso(base, 57),
+            quays: [
+              { id: STOP_A_ID, parentId: parentAId },
+              { id: STOP_B_ID, parentId: parentBId },
+            ],
+          }),
+        ],
+        [],
+      ),
+    );
+
+    await busJob(env, base, new AbortController().signal);
+
+    const configKey = `${LINE_ID}|${parentAId}|${parentBId}`;
+    const snap = await getSnapshot(env, "bus", configKey);
+    const status = snap?.data as {
+      boards: Array<{ boardStop: string; towardStop: string; departures: Array<{ depTime: string }> }>;
+    };
+    const boardA = status.boards.find((b) => b.boardStop === STOP_A_NAME)!;
+    expect(boardA.towardStop).toBe(STOP_B_NAME);
+    expect(boardA.departures.map((d) => hm(d.depTime))).toEqual([hm(iso(base, 57))]);
   });
 });
 

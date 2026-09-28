@@ -6,6 +6,7 @@ import {
   FETCH_LIMIT,
   type BusBoard,
   type BusCall,
+  type QuayRef,
   type WatchedLineConfig,
   board,
   countdownText,
@@ -35,8 +36,13 @@ function at(hour: number, minute: number): string {
   return osloIsoOffset(new Date(Date.UTC(2026, 8, 22, hour - 2, minute, 0)));
 }
 
+/** 站序里的一站，可选带父站 id（[gate] P10 修正）。 */
+function q(id: string, parentId?: string): QuayRef {
+  return parentId === undefined ? { id } : { id, parentId };
+}
+
 function call(
-  opts: Partial<BusCall> & { aimed?: string | null; expected?: string | null; quayIds?: string[] } = {},
+  opts: Partial<BusCall> & { aimed?: string | null; expected?: string | null; quays?: QuayRef[] } = {},
 ): BusCall {
   return {
     line: opts.line ?? LINE,
@@ -45,7 +51,7 @@ function call(
     expectedDep: opts.expected ?? null,
     realtime: opts.realtime ?? false,
     cancelled: opts.cancelled ?? false,
-    quayIds: opts.quayIds ?? [ALPHA_ID, BETA_ID],
+    quays: opts.quays ?? [q(ALPHA_ID), q(BETA_ID)],
   };
 }
 
@@ -78,33 +84,52 @@ function boardBeta(calls: BusCall[]): BusBoard {
 
 describe("passesThrough：方向判定按站序，不看终点文案", () => {
   it("对端站出现在本站之后 → true", () => {
-    expect(passesThrough([ALPHA_ID, MID_ID, BETA_ID], ALPHA_ID, BETA_ID)).toBe(true);
+    expect(passesThrough([q(ALPHA_ID), q(MID_ID), q(BETA_ID)], ALPHA_ID, BETA_ID)).toBe(true);
   });
 
   it("对端站在本站之前（反向班次） → false", () => {
-    expect(passesThrough([BETA_ID, MID_ID, ALPHA_ID], ALPHA_ID, BETA_ID)).toBe(false);
+    expect(passesThrough([q(BETA_ID), q(MID_ID), q(ALPHA_ID)], ALPHA_ID, BETA_ID)).toBe(false);
   });
 
   it("站序里没有对端站（只开到中途的区间车） → false", () => {
-    expect(passesThrough([ALPHA_ID, MID_ID], ALPHA_ID, BETA_ID)).toBe(false);
+    expect(passesThrough([q(ALPHA_ID), q(MID_ID)], ALPHA_ID, BETA_ID)).toBe(false);
   });
 
   it("站序里没有本站 → false", () => {
-    expect(passesThrough([MID_ID, BETA_ID], ALPHA_ID, BETA_ID)).toBe(false);
+    expect(passesThrough([q(MID_ID), q(BETA_ID)], ALPHA_ID, BETA_ID)).toBe(false);
   });
 
   it("fromId / toId 为空串 → false", () => {
-    expect(passesThrough([ALPHA_ID, BETA_ID], "", BETA_ID)).toBe(false);
-    expect(passesThrough([ALPHA_ID, BETA_ID], ALPHA_ID, "")).toBe(false);
+    expect(passesThrough([q(ALPHA_ID), q(BETA_ID)], "", BETA_ID)).toBe(false);
+    expect(passesThrough([q(ALPHA_ID), q(BETA_ID)], ALPHA_ID, "")).toBe(false);
+  });
+
+  // ---- [gate] P10 修正：站的匹配也认父站（CONTRACT 第 9 节） ----
+
+  it("设置是父站，站序是带 parentId 的子站 → true", () => {
+    const parentA = "NSR:StopPlace:91001";
+    const parentB = "NSR:StopPlace:91002";
+    expect(passesThrough([q(ALPHA_ID, parentA), q(BETA_ID, parentB)], parentA, parentB)).toBe(true);
+  });
+
+  it("站序子站的 parentId 是别的站 → false", () => {
+    const parentA = "NSR:StopPlace:91001";
+    expect(passesThrough([q(ALPHA_ID, parentA), q(BETA_ID, "NSR:StopPlace:99999")], parentA, "NSR:StopPlace:91002")).toBe(
+      false,
+    );
+  });
+
+  it("设置是子站，站序是同一子站（没有 parentId）→ true", () => {
+    expect(passesThrough([q(ALPHA_ID), q(BETA_ID)], ALPHA_ID, BETA_ID)).toBe(true);
   });
 });
 
 describe("board：方向过滤（对应 Bus280PolicyTest 的方向用例）", () => {
   it("A 站保留经站序真正到达 B 的班次，区间车被排除", () => {
     const calls = [
-      call({ aimed: at(8, 7), quayIds: [ALPHA_ID, MID_ID] }),
-      call({ aimed: at(8, 17), quayIds: [ALPHA_ID, MID_ID] }),
-      call({ aimed: at(8, 57), quayIds: [ALPHA_ID, MID_ID, BETA_ID] }),
+      call({ aimed: at(8, 7), quays: [q(ALPHA_ID), q(MID_ID)] }),
+      call({ aimed: at(8, 17), quays: [q(ALPHA_ID), q(MID_ID)] }),
+      call({ aimed: at(8, 57), quays: [q(ALPHA_ID), q(MID_ID), q(BETA_ID)] }),
     ];
 
     const b = boardAlpha(calls);
@@ -116,8 +141,8 @@ describe("board：方向过滤（对应 Bus280PolicyTest 的方向用例）", ()
 
   it("B 站保留开往 A 的班次", () => {
     const calls = [
-      call({ aimed: at(8, 29), quayIds: [BETA_ID, MID_ID, ALPHA_ID] }),
-      call({ aimed: at(9, 29), quayIds: [BETA_ID, MID_ID, ALPHA_ID] }),
+      call({ aimed: at(8, 29), quays: [q(BETA_ID), q(MID_ID), q(ALPHA_ID)] }),
+      call({ aimed: at(9, 29), quays: [q(BETA_ID), q(MID_ID), q(ALPHA_ID)] }),
     ];
 
     const b = boardBeta(calls);
@@ -126,7 +151,7 @@ describe("board：方向过滤（对应 Bus280PolicyTest 的方向用例）", ()
   });
 
   it("a board never picks up departures heading the other way", () => {
-    const calls = [call({ aimed: at(8, 7), quayIds: [BETA_ID, MID_ID, ALPHA_ID] })];
+    const calls = [call({ aimed: at(8, 7), quays: [q(BETA_ID), q(MID_ID), q(ALPHA_ID)] })];
 
     expect(boardAlpha(calls).departures).toEqual([]);
   });
@@ -262,7 +287,7 @@ describe("status", () => {
     const s = status(
       config,
       [call({ aimed: at(8, 57) })],
-      [call({ aimed: at(8, 29), quayIds: [BETA_ID, ALPHA_ID] })],
+      [call({ aimed: at(8, 29), quays: [q(BETA_ID), q(ALPHA_ID)] })],
       now,
       "2026-09-22T08:00:00+02:00",
     );

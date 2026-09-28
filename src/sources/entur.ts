@@ -492,13 +492,23 @@ ${stopIds.map((_, index) => lightStopBlock(index)).join("\n")}
 // 早期版本曾有一个只按线路号白名单过滤、不取站序的变体（`fetchStopDeparturesForLines`），
 // T9.5 起已删除（T9.3 之后已无人调用）。与那个变体的区别：line 白名单只传一个
 // （关注线路只有一条），并且每班次额外取 serviceJourney.quays
-// { stopPlace { id } }（该班次按顺序经过的 stop place id）——CONTRACT 第 9 节的方向判定
-// 靠站序而不是终点文案，需要这份数据。bff/scripts/probe-entur-lines.mjs 已在本机验证
+// { stopPlace { id parent { id } } }（该班次按顺序经过的 stop place，含各自的父站 id）——
+// CONTRACT 第 9 节的方向判定靠站序而不是终点文案，需要这份数据；parent 是 [gate] P10
+// 修正：估计到站给出的常是子 stop place（如站台），设置里存的可能是父站 id（多模式枢纽），
+// 缺 parent 时按 null 处理，只比 id。bff/scripts/probe-entur-lines.mjs 已在本机验证
 // serviceJourney.quays 字段存在。
 // ---------------------------------------------------------------------
 
+// [gate] P10 修正：parent 是该子站所属的父 stop place（多模式枢纽没有父站时为 null），
+// 与 CONTRACT 第 9 节「站的匹配」对应——设置里存的可能是父站 id，方向判定要能认出子站。
 const WatchedLineQuaySchema = z.object({
-  stopPlace: z.object({ id: z.string().nullable().default(null) }).nullable().default(null),
+  stopPlace: z
+    .object({
+      id: z.string().nullable().default(null),
+      parent: z.object({ id: z.string().nullable().default(null) }).nullable().default(null),
+    })
+    .nullable()
+    .default(null),
 });
 
 const WatchedLineServiceJourneySchema = z.object({
@@ -544,7 +554,7 @@ function watchedLineStopBlock(index: number): string {
       serviceJourney {
         transportMode
         journeyPattern { line { publicCode } }
-        quays { stopPlace { id } }
+        quays { stopPlace { id parent { id } } }
       }
     }
   }`;
