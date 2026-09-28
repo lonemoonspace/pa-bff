@@ -1,0 +1,14 @@
+# 单包工作区：packages 只列本目录。pnpm 10 要求工作区文件里必须有 packages 字段，
+# Cloudflare Workers Builds（Deploy 按钮用的构建机）默认就是 pnpm 10，缺了会直接报
+# 「packages field missing or empty」而装不上依赖。
+packages:
+  - "."
+
+# 允许这两个依赖跑安装脚本：pnpm 11 读 allowBuilds，pnpm 10 读 onlyBuiltDependencies，
+# 两个都写，保证本地（pnpm 11）与 Cloudflare 构建机（pnpm 10）行为一致。
+allowBuilds:
+  esbuild: true
+  workerd: true
+onlyBuiltDependencies:
+  - esbuild
+  - workerd

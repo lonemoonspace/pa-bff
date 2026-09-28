@@ -1,0 +1,26 @@
+{
+  "data": {
+    "stopA": {
+      "name": "Alpha",
+      "quays": [
+        {
+          "lines": [
+            { "id": "TST:Line:42", "publicCode": "42", "name": "Alpha - Beta", "transportMode": "bus" },
+            { "id": "TST:Line:99", "publicCode": "99", "name": "Alpha loop", "transportMode": "bus" }
+          ]
+        }
+      ]
+    },
+    "stopB": {
+      "name": "Beta",
+      "quays": [
+        {
+          "lines": [
+            { "id": "TST:Line:42", "publicCode": "42", "name": "Alpha - Beta", "transportMode": "bus" },
+            { "id": "TST:Line:7", "publicCode": "7", "name": "Beta express", "transportMode": "rail" }
+          ]
+        }
+      ]
+    }
+  }
+}

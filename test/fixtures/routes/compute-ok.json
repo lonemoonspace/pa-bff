@@ -1,0 +1,5 @@
+{
+  "routes": [
+    { "duration": "1234s", "staticDuration": "1100s", "distanceMeters": 15200 }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "error": {
+    "code": 400,
+    "message": "Invalid message payload",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.firebase.fcm.v1.FcmError",
+        "errorCode": "INVALID_ARGUMENT"
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "features": [
+    {
+      "properties": {
+        "id": "NSR:StopPlace:418",
+        "name": "Asker stasjon",
+        "locality": "Asker"
+      }
+    },
+    {
+      "properties": {
+        "id": "NSR:StopPlace:59616",
+        "name": "Asker skole",
+        "locality": "Asker"
+      }
+    },
+    {
+      "properties": {
+        "id": "NSR:Quay:12345",
+        "name": "Asker plattform 1",
+        "locality": "Asker"
+      }
+    },
+    {
+      "properties": {
+        "id": "NSR:StopPlace:99999",
+        "name": "Askerveien",
+        "locality": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "data": {
+    "stopA": {
+      "name": "Spikkestad",
+      "estimatedCalls": [
+        {
+          "realtime": true,
+          "aimedDepartureTime": "2026-09-23T12:10:00+02:00",
+          "expectedDepartureTime": "2026-09-23T12:10:00+02:00",
+          "cancellation": false,
+          "destinationDisplay": { "frontText": "Lillestrøm" },
+          "serviceJourney": {
+            "transportMode": "rail",
+            "journeyPattern": { "line": { "publicCode": "L1" } },
+            "estimatedCalls": [
+              {
+                "quay": { "name": "Sandvika" },
+                "aimedArrivalTime": "2026-09-23T12:25:00+02:00",
+                "expectedArrivalTime": "2026-09-23T12:25:00+02:00"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "stopB": {
+      "name": "Sandvika",
+      "estimatedCalls": [
+        {
+          "realtime": true,
+          "aimedDepartureTime": "2026-09-23T12:20:00+02:00",
+          "expectedDepartureTime": "2026-09-23T12:20:00+02:00",
+          "cancellation": false,
+          "destinationDisplay": { "frontText": "Spikkestad" },
+          "serviceJourney": {
+            "transportMode": "rail",
+            "journeyPattern": { "line": { "publicCode": "L1" } },
+            "estimatedCalls": [
+              {
+                "quay": { "name": "Spikkestad" },
+                "aimedArrivalTime": "2026-09-23T12:35:00+02:00",
+                "expectedArrivalTime": "2026-09-23T12:35:00+02:00"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

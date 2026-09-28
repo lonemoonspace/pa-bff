@@ -1,0 +1,37 @@
+{
+  "name": "pa-bff",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "typecheck": "tsc --noEmit && tsc -p admin-ui --noEmit",
+    "test": "vitest run",
+    "bench": "tsx bench/index.ts",
+    "deploy": "wrangler d1 migrations apply DB --remote && wrangler deploy",
+    "deploy:dry": "wrangler deploy --dry-run --outdir dist",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply pa-bff --local",
+    "db:migrate:remote": "wrangler d1 migrations apply pa-bff --remote"
+  },
+  "cloudflare": {
+    "bindings": {
+      "MASTER_KEY": "AES-GCM 主密钥：32 字节随机数的 base64 编码，用于加密所有已保存的第三方 Key 与推送令牌。生成方法与长度要求见 .dev.vars.example",
+      "CLAIM_CODE": "第一台设备认领服务器用的口令，至少 12 个字符；认领成功后失效。生成方法见 .dev.vars.example"
+    }
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.3",
+    "hono": "4.13.8",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "0.22.0",
+    "@cloudflare/workers-types": "5.20260919.1",
+    "drizzle-kit": "0.31.11",
+    "tsx": "^4.23.15",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11",
+    "wrangler": "4.135.0"
+  }
+}

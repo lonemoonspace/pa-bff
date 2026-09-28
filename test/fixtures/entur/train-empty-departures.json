@@ -1,0 +1,6 @@
+{
+  "data": {
+    "stopA": { "name": "X", "estimatedCalls": [] },
+    "stopB": { "name": "Y", "estimatedCalls": [] }
+  }
+}

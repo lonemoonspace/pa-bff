@@ -1,0 +1,9 @@
+{
+  "season": { "currentMatchday": 6 },
+  "scorers": [
+    { "player": { "name": "A" }, "team": { "id": 87, "name": "Rayo" }, "goals": 6 },
+    { "player": { "name": "B" }, "team": { "id": 86, "name": "Real Madrid CF", "shortName": "Real Madrid" }, "goals": 5 },
+    { "player": { "name": "C" }, "team": { "id": 81, "name": "Barça" }, "goals": 5 },
+    { "player": { "name": "D" }, "team": { "id": 78, "name": "Atleti" }, "goals": 4 }
+  ]
+}

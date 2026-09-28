@@ -1,0 +1,16 @@
+{
+  "season": { "currentMatchday": 6 },
+  "standings": [
+    {
+      "type": "HOME",
+      "table": [{ "position": 1, "team": { "id": 1, "name": "Wrong table" } }]
+    },
+    {
+      "type": "TOTAL",
+      "table": [
+        { "position": 2, "team": { "id": 86, "name": "Real Madrid CF", "shortName": "Real Madrid" }, "points": 12 },
+        { "position": 1, "team": { "id": 81, "name": "FC Barcelona", "shortName": "Barça" }, "points": 15 }
+      ]
+    }
+  ]
+}

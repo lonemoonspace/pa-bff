@@ -1,0 +1,28 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pa-bff",
+  "main": "src/index.ts",
+  // 不能晚于本地 workerd（随 vitest-pool-workers 安装）支持的最新日期，否则测试进程会卡住不退出。
+  "compatibility_date": "2026-08-22",
+  "triggers": {
+    "crons": ["* * * * *"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pa-bff",
+      // 占位符：部署前用 `wrangler d1 create pa-bff` 建库后替换为真实 database_id
+      "database_id": "2f069df1-4070-44dc-9d54-e665285a2ba6",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "assets": {
+    "directory": "./admin-ui/public",
+    "binding": "ASSETS",
+    // 没有 run_worker_first 时静态文件会绕过 Worker 直接对外，JWT 校验形同虚设。
+    "run_worker_first": ["/admin", "/admin/*"]
+  },
+  "observability": {
+    "enabled": true
+  }
+}

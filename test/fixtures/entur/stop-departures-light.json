@@ -1,0 +1,24 @@
+{
+  "data": {
+    "stop0": {
+      "name": "Asker stasjon",
+      "estimatedCalls": [
+        {
+          "realtime": true,
+          "aimedDepartureTime": "2026-09-22T08:57:00+02:00",
+          "expectedDepartureTime": "2026-09-22T08:58:00+02:00",
+          "cancellation": false,
+          "destinationDisplay": { "frontText": "Nordby" },
+          "serviceJourney": {
+            "transportMode": "bus",
+            "journeyPattern": { "line": { "publicCode": "42" } }
+          }
+        }
+      ]
+    },
+    "stop1": {
+      "name": "Nordby stasjon",
+      "estimatedCalls": []
+    }
+  }
+}

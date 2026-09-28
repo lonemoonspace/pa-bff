@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "types": ["@cloudflare/workers-types", "@cloudflare/vitest-pool-workers/types", "./test/env.d.ts"],
+    // allowJs（不开 checkJs）：test/admin-ui/*.test.ts 直接 import admin-ui 的 lib/*.js
+    // 做纯函数测试（P7 通用约定）；这些文件的类型检查交给 `tsc -p admin-ui` 单独跑，
+    // 这里只是让 tsc 不要因为「导入了没类型声明的 JS」而报错。
+    "allowJs": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts", "vitest.config.ts", "drizzle.config.ts"]
+}

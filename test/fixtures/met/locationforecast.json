@@ -1,0 +1,33 @@
+{
+  "properties": {
+    "timeseries": [
+      {
+        "time": "2026-09-08T12:00:00Z",
+        "data": {
+          "instant": {
+            "details": {
+              "air_temperature": 18.5,
+              "wind_speed": 3.2,
+              "wind_from_direction": 270.0,
+              "precipitation_amount": 0.0
+            }
+          },
+          "next_1_hours": {
+            "summary": { "symbol_code": "partlycloudy_day" },
+            "details": { "precipitation_amount": 0.1 }
+          },
+          "next_6_hours": {
+            "summary": { "symbol_code": "cloudy" },
+            "details": { "precipitation_amount": 0.5 }
+          }
+        }
+      },
+      {
+        "time": "2026-09-08T13:00:00Z",
+        "data": {
+          "instant": { "details": { "air_temperature": 19.0 } }
+        }
+      }
+    ]
+  }
+}

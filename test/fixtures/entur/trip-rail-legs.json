@@ -1,0 +1,27 @@
+{
+  "data": {
+    "trip": {
+      "tripPatterns": [
+        {
+          "legs": [
+            {
+              "mode": "foot",
+              "aimedStartTime": "2026-09-08T19:00:00+02:00",
+              "aimedEndTime": "2026-09-08T19:05:00+02:00"
+            },
+            {
+              "mode": "rail",
+              "aimedStartTime": "2026-09-08T19:10:00+02:00",
+              "aimedEndTime": "2026-09-08T19:40:00+02:00",
+              "expectedStartTime": "2026-09-08T19:12:00+02:00",
+              "expectedEndTime": "2026-09-08T19:41:00+02:00",
+              "line": { "publicCode": "R14" },
+              "fromPlace": { "name": "Asker" },
+              "toPlace": { "name": "Oslo S" }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

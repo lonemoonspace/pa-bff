@@ -1,0 +1,38 @@
+{
+  "filters": {},
+  "resultSet": { "count": 2 },
+  "matches": [
+    {
+      "id": 4300001,
+      "competition": { "id": 2014, "name": "Primera Division", "code": "PD" },
+      "utcDate": "2026-09-08T19:00:00Z",
+      "status": "SCHEDULED",
+      "matchday": 4,
+      "homeTeam": {
+        "id": 86,
+        "name": "Real Madrid CF",
+        "shortName": "Real Madrid",
+        "tla": "RMA",
+        "crest": "https://crests.football-data.org/86.png"
+      },
+      "awayTeam": {
+        "id": 90,
+        "name": "Real Betis Balompié",
+        "shortName": "Real Betis",
+        "tla": "BET",
+        "crest": "https://crests.football-data.org/90.png"
+      },
+      "score": { "winner": null, "duration": "REGULAR", "fullTime": { "home": null, "away": null } }
+    },
+    {
+      "id": 4300002,
+      "competition": { "id": 2014, "name": "Primera Division" },
+      "utcDate": "2026-08-30T15:00:00Z",
+      "status": "FINISHED",
+      "matchday": 2,
+      "homeTeam": { "id": 86, "name": "Real Madrid CF" },
+      "awayTeam": { "id": 78, "name": "Málaga CF" },
+      "score": { "winner": "HOME_TEAM", "duration": "REGULAR", "fullTime": { "home": 4, "away": 0 } }
+    }
+  ]
+}

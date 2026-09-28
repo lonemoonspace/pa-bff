@@ -1,0 +1,25 @@
+{
+  "data": {
+    "stopA": {
+      "name": "Asker",
+      "estimatedCalls": [
+        {
+          "realtime": true,
+          "aimedDepartureTime": "2026-09-08T08:10:00+02:00",
+          "expectedDepartureTime": "2026-09-08T08:12:00+02:00",
+          "cancellation": false,
+          "destinationDisplay": { "frontText": "Oslo S" },
+          "serviceJourney": {
+            "transportMode": "rail",
+            "journeyPattern": { "line": { "publicCode": "R14" } },
+            "estimatedCalls": []
+          }
+        }
+      ]
+    },
+    "stopB": {
+      "name": "Oslo S",
+      "estimatedCalls": []
+    }
+  }
+}
